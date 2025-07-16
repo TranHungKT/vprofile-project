@@ -70,7 +70,7 @@ pipeline {
         stage("Deploy to aws") {
             steps {
                 withAWS(credentials: 'awscreds', region: 'ap-southeast-2') {
-                    sh 'aws ecs update-sevice --cluster ${cluster} --service ${service} --force-new-deployment'
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
                 }
             }
         }
