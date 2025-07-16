@@ -15,6 +15,9 @@ pipeline {
 		NEXUSPORT = '8081'
 		NEXUS_GRP_REPO = 'vpro-maven-group'
         NEXUS_LOGIN = 'nexuslogin'
+        registryCredential = 'ecr:ap-southeast-2:awscreds'
+        appRegistry = '407558439482.dkr.ecr.ap-southeast-2.amazonaws.com/vprofileappimg'
+        vprofileRegistry = 'https://407558439482.dkr.ecr.ap-southeast-2.amazonaws.com' 
     }
 
     stages {
@@ -40,6 +43,25 @@ pipeline {
         stage('Checkstyle Analysis') {
             steps {
                 sh 'mvn -s settings.xml checkstyle:checkstyle'
+            }
+        }
+
+        stage("Build App Image"){
+            steps {
+                script { 
+                    dockerImage = docker.build(appRegistry + ":$BUILD_NUMBER" , "./Docker-files/app/multistage")
+                }
+            }
+        }
+
+        stage("Update App Image") {
+            steps {
+                script {
+                    docker.withRegistry(vprofileRegistry, registryCredential) {
+                        dockerImage.push("$BUILD_NUMBER")
+                        dockerImage.push("latest")
+                    }
+                }
             }
         }
     }
